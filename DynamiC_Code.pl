@@ -21,36 +21,44 @@
 use strict;
 use Getopt::Std;
 #####################
+#Initializing the options
 my %opts;
-getopt('ftrwsczuhmlnkepo',\%opts);
-my @options=('f','t','r','w','s','c','z','u','h','m','l','n','k','e','p','o'); 
+getopt('ftrwsczuhmlnkepoxd',\%opts);
+my @options=('f','t','r','w','s','c','z','u','h','m','l','n','k','e','p','o','x','d'); 
+#Assigning the options [with "_" instead of "-" that contradict with compression tool used"
 foreach my $value(@options){
-	for(my $a=0;$a<30;$a=$a+2){
+	for(my $a=0;$a<32;$a=$a+2){
 		my $temp_Value = '_'.$value;
 		if($temp_Value eq $ARGV[$a]){$opts{$value}=$ARGV[$a+1];}
 	}
 }
 #assigning variables
-my $reference=$opts{r};
-my $output=$opts{o};
-my $processors=$opts{p};if(!$processors){$processors=1;}
-my $window=$opts{w};if(!$window){$window=500;}
-my $shift=$opts{s};if(!$shift){$shift=50;}
-my $cutoff=$opts{c};if(!$cutoff){$cutoff=0.10;}
-my $family_size=$opts{z}-1;if(!$family_size){$family_size=2;}$family_size=$family_size*2;
-my $upper_threshold=$opts{u};if(!$upper_threshold){$upper_threshold=0.01;}
-my $lower_threshold=$opts{h};if(!$lower_threshold){$lower_threshold=0.03;}
-my $mode=$opts{m};
-my $log=$opts{o}."/All.logfile"; unlink($log);
+my $reference=$opts{r}; 																	#for alignment
+my $output=$opts{o};	 																	#Output directory 
+my $processors=$opts{p};if(!$processors){$processors=1;} 							#Number of processors
+my $window=$opts{w};if(!$window){$window=500;} 									#Window size for building the table
+my $shift=$opts{s};if(!$shift){$shift=50;} 									#Window framshif size for building the table
+my $cutoff=$opts{c};if(!$cutoff){$cutoff=0.10;} 								#level of stringency of the cut-off 0.1 for MiSeq and 0.025 for Sanger
+my $family_size=$opts{z}-1;if(!$family_size){$family_size=2;}$family_size=$family_size*2; 			#minimum size for species within a family to be included (should not be less than 3)
+my $upper_threshold=$opts{u};if(!$upper_threshold){$upper_threshold=0.01;} 					#Highest acceptable cut-off
+my $lower_threshold=$opts{h};if(!$lower_threshold){$lower_threshold=0.03;} 					#Lowest acceptable cut-off
+my $mode=$opts{m}; 												#Mode of running "train" for building the lookup table "test" for utlizing the table and clustering an actual sample
+my $log=$opts{o}."/All.logfile"; unlink($log); 									#All log files
+my $begin=$opts{x};																			#If used only calculating the distances for the specified region
+if(!$opts{x}){print "Building the Lookup table for the whole location of the 16S rRNA gene using the specified window and frameshift via _w _s \n";$begin=0;}else{print "Building the lookup table for for the specified location within the 16S rRNA gene via _x option\n";}
+
 if($mode eq "train"){
-	
+#Entering the training mode	
+	#checking the absence/presence of training options!
 	if(-e $opts{r}){}else{print "Please insert reference database for aligning as silva\n ";exit;}
 	if(-e $opts{t}){}else{print "Please insert two column file with the database IDs and the Taxonomic families.\n";exit;}
 	if(-e $opts{f}){}else{print "Please insert fasta file of database (e.g. type straing Living Tree Project database) \n";exit;}
-	if(-e $opts{o}){system"rm -r $output/Temp";mkdir("$output/Temp");system"rm -r $output/Final";mkdir("$output/Final"); }else{print "Please assign output path \n";exit;}
+	if(-e $opts{o}){if(-e $output."/Temp"){system"rm -r $output/Temp";}mkdir("$output/Temp");if(-e $output."/Final"){system"rm -r $output/Final";}mkdir("$output/Final");}else{print "Please assign output path \n";exit;}
 	#####################
+	#Initializing the folders for analysis and output
 	mkdir("./families");
 	mkdir("$output/Temp/families");
+	
 	#preparing the R file
 	open FH,">",$output."/Temp/cutoff_stat.R";print FH 'habal<-read.table("./habal.dist", header=TRUE,  sep=",")
 	#summary(habal)
@@ -62,13 +70,11 @@ if($mode eq "train"){
 	quantile(habal,c('.$cutoff.'))
 	';
 
-
-
 	#getting the unique list of families (e.g. LTP.table)
 	system "cut -f2 $opts{t} | sort | uniq | sed '/\^\\\W\*\$/d'  > $output/Temp/All.families";
 
-	open FH,"$output/Temp/All.families";my @families=<FH>;close FH;
 	#Extracting fasta for each family, named family.all.fasta
+	open FH,"$output/Temp/All.families";my @families=<FH>;close FH;
 
 	for(my $i=0;$i<scalar(@families);$i++){
 		my $family=$families[$i];
@@ -91,9 +97,9 @@ if($mode eq "train"){
 	system "cp $output/Temp/Families.pick.align $output/Temp/E_coli.align";
 
 	#Getting the cutting the start and end position in correspondance to E_Coli 
-	system("rm -r $output/Temp/Distance_window_$window");
+	if(-e $output."/Temp/Distance_window_".$window){system("rm -r $output/Temp/Distance_window_$window");}
 	mkdir("$output/Temp/Distance_window_$window");
-	for (my $o=0;$o<1500-$window;$o=$o+$shift){
+	for (my $o=$begin;$o<600-$window;$o=$o+$shift){
 		open FH,"$output/Temp/E_coli.align";my @ecoli=<FH>;close FH;
 		my @ecoli_arr=split("",$ecoli[1]);
 		my $start=0;
@@ -106,10 +112,10 @@ if($mode eq "train"){
 		}
 		system "./mothur \"\#pcr.seqs(processors=$processors,fasta=$output/Temp/Families.align,start=$start,end=$end);filter.seqs(vertical=T)\">> $log";
 		system("cp $output/Temp/Families.pcr.filter.fasta $output/Temp/Distance_window_$window/$o.fasta");
+		if($opts{x}){$o=1500;}
 	}
 
 	#Building the OTU_table
-
 	for(my $i=0;$i<scalar(@families);$i++){
 		my $family=$families[$i];
 		chomp ($family);
@@ -117,12 +123,11 @@ if($mode eq "train"){
 		open FH,$fasta;my @temp_arr=<FH>;close FH;
 		if(scalar(@temp_arr)>$family_size){
 					mkdir("$output/Temp/Distance_window_$window/$family");
-					#for (my $o=0;$o<450-$window;$o=$o+100){
-					for (my $o=0;$o<1500-$window;$o=$o+$shift){
+					for (my $o=$begin;$o<600-$window;$o=$o+$shift){
 						system "./mothur \"\#list.seqs(fasta=$fasta);get.seqs(fasta=$output/Temp/Distance_window_$window/$o.fasta,accnos=current);dist.seqs(processors=$processors,cutoff=1)\">> $log";			
 						system ("cp $output/Temp/Distance_window_$window/$o.pick.fasta $output/Temp/Distance_window_$window/$family/$o.fasta");	
 						system ("cp $output/Temp/Distance_window_$window/$o.pick.dist $output/Temp/Distance_window_$window/$family/$o.dist");
-						#system ("echo \"Dist\" > ./habal.dist");
+						system ("echo \"Dist\" > ./habal.dist");
 						system ("cut -f3 -d \" \" $output/Temp/Distance_window_$window/$o.pick.dist >> ./habal.dist");
 						if(-e "./habal.dist"){    
 							system "R CMD BATCH $output/Temp/cutoff_stat.R";#habal.R
@@ -130,11 +135,8 @@ if($mode eq "train"){
 							unlink("./cutoff_stat.Rout");
 							unlink("./habal.dist");
 						}
+					if($opts{x}){$o=1500;}
 					}
-
-					
-			
-			
 		} 
 	}
 	system "rm *logfile";
@@ -151,8 +153,7 @@ if($mode eq "train"){
 			$CutOff[$i]=$family."\t";
 
 			mkdir("$output/Temp/Distance_window_$window/$family");
-					#for (my $o=0;$o<450-$window;$o=$o+100){
-					for (my $o=0;$o<1500-$window;$o=$o+$shift){
+					for (my $o=$begin;$o<600-$window;$o=$o+$shift){
 				open FH,"$output/Temp/Distance_window_$window/$family/$o._summary";my @sum=<FH>;close FH;
 				$sum[30]=~/([\d]+\.?[\d]*)/;
 				$sum[30]=$1;
@@ -160,7 +161,7 @@ if($mode eq "train"){
 				if($sum[30]<$upper_threshold){$sum[30]=$upper_threshold;}
 				if($sum[30]>$lower_threshold){$sum[30]=$lower_threshold;}
 				$CutOff[$i]=$CutOff[$i].$sum[30]."\t";chomp($CutOff[$i]);
-		
+				if($opts{x}){$o=1500;}
 			}	
 		}
 	}
@@ -169,15 +170,17 @@ if($mode eq "train"){
 	system ("rm $output/Temp/Distance_window_$window/*dist");
 }
 elsif($mode eq "test"){
-#testing on real dataset
+#Entering the training mode	
 
 #defining variables
-	my $window=$opts{k};if(!$window){$window=1;}
-	my $lookup=$opts{w};if(!$lookup){print "Please insert a valid Lookuptable, or train one using the training mode\n"; exit;}
-	my $fasta=$opts{f};if(!$fasta){print "Please insert a valid fasta file\n";exit;}
-	my $names=$opts{n};if(!$names){print "Please insert a valid names file\n";exit;}
-	my $tax=$opts{t};if(!$tax){print "Please insert a valid Taxonomy file\n";exit;}
-	my $method=$opts{e};if(!$method){$method="average";}
+	my $window=$opts{k};if(!$window){$window=1;} 																					#Specifying which region have been targeted (use 1 -default- whenever _w was used in training
+	my $lookup=$opts{w};if(!$lookup){print "Please insert a valid Lookuptable, or train one using the training mode\n"; exit;}		#Created via the training mode
+	my $fasta=$opts{f};if(!$fasta){print "Please insert a valid fasta file\n";exit;}							#your samples 
+	my $names=$opts{n};if(!$names){print "Please insert a valid names file\n";exit;}							#created via mothur unique.seqs (see readme)
+	my $tax=$opts{t};if(!$tax){print "Please insert a valid Taxonomy file\n";exit;}								#Created via mothur classify.seqs (see readme)
+	my $method=$opts{e};if(!$method){$method="average";}											#see mothur clustering information
+	my $depth=$opts{d};	if(!$depth){$depth=5;}	
+#Preparing the output files
 	if(-e $opts{o}){system"rm -r $output/Temp";mkdir("$output/Temp");system"rm -r $output/Final";mkdir("$output/Final"); }else{print "Please assign output path \n";exit;}
 	
 	$method=~/^(\w)/;my $clst_method=$1."n";
@@ -193,8 +196,8 @@ elsif($mode eq "test"){
 	mkdir("./Data_results/$i");
 
 
-
-	system "cut -f5 -d \";\" $tax | cut -f 1 -d \"\(\" | sort | uniq | sed '/\^\\\W\*\$/d'  > $output/Temp/All.families";
+#Simplifying the taxonomy file to the depth needed
+	system "cut -f$depth -d \";\" $tax | cut -f 1 -d \"\(\" | sort | uniq | sed '/\^\\\W\*\$/d'  > $output/Temp/All.families";
 
 	open FH,"$output/Temp/All.families";my @families=<FH>;close FH;
 	
@@ -315,18 +318,19 @@ Used to calculate a lookup table to be used in the testing mode
 	 _z Minimum size of accepted families with (default 3)
 	 _u Upper cut-off value for OTUs clustering (default= 0.01)
 	 _h Lower cut-off value for OTUs clustering (default= 0.03) 
+	 _x To calculate the distances for the exact region within the 16S rRNA gene (in such case use _s 1500)
 	 
 Testing Mode:
 Used to calculate a lookup table to be used in the testing mode
 
 	#Mandatory Options:
 	 _m test
-	 _w Look Up table (created from the training mode)
+	 _w Look Up table (created from the training mode) use default in case _x was used while training
 	 _f Fasta file of your sample
 	 _n name file of your sample
 	 _t Taxonomy file of your sample (created using mothur classify.seqs command)
 	 _k location within the 16S rRNA gene
-	 
+	 _d Number idecating the taxonomic depth for clustering [0=kingdom, 6= genus] (default is 5 for family level)
 	 #Non-mandatory Options:
 	 _e mothur clustering algorithm (average, nearest or furthest, default is average)
 
@@ -341,3 +345,4 @@ CITING [please cite the included software (Mothur)]:
 
 ";
 }
+
