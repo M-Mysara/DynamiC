@@ -90,6 +90,10 @@ to specify training mode use the following option
 	_h	Lower cut-off value for OTUs clustering (default= 0.03) 
  		This is used to assign a maximum cut-off in order not to have too loose cut-off 
  		This can be important in order not to overmerge species into the same OTU.
+ 		
+ 	_x	Number specifying the region targeted via your primer 
+ 		Preferably make _s 1500 (in case you are only interested in that region)
+ 		
 
 ##Testing Mode:
 Used to cluster 16s rRNA gene amplicon sequencing data with our proposed lookup table obtained via training mode
@@ -123,8 +127,10 @@ To specify testing mode use the following option
 			The _k should be equal 6 which corresponds to position 250 to 750 within the 16S rRNA gene
 			As: 1 (1-500), 2 (50-550). 3 (100-600), 4 (150-650), 5 (200-700), 6 (250-750)
 			Assuming _s 50 and _w 500 parameter and their values were used in training
-
-
+		In case _x was used properly, No need to specify the _k value
+	_d	Number illustration the desired taxonomic depth to use for clustering with the lookup table.
+		1= Kingdom, 6=genus, default is 5 (family)
+		This has also to match the taxonomic rank used while training the lookup table
 ####Non-mandatory Options:
 		_e mothur clustering algorithm default is "average"
 		Options are:
