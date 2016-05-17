@@ -32,7 +32,7 @@ Perl, R and mothur need to be installed in order to be able to run the software,
 There are two modes to run DynamiC, i.e. Training or Testing "Running" mode, they can be specified via the "_m" option. 
 -	The training mode is used to build up your lookup table that takes into account the taxonomic rank (default taxonomic level is the family level) as well as the location and length of the used amplicon within the 16S rRNA gene.
 -	The testing mode  utilizes the lookup table created in training mode  for OTU clustering using a dynamic cut-off score.
-	Example:
+Example:
 
         Taxonomic Family      Position(0-300)   Position(50-350)                          
         Staphylococcaceae     0.027             0.021
