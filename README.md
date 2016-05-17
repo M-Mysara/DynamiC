@@ -14,24 +14,30 @@
 ###Introducing Dynamic Cutoff (**D**ynami**C**)
 ####Adjustable cutoff for OTU clustering
 #####The development of high-throughput sequencing technologies has revolutionized the field of microbial ecology via 16S RNA gene amplicon sequencing approaches. Clustering those amplicon sequencing data into Operational Taxonomic Units (OTUs) is one of the most commonly used approaches to approximate a bacterial species. Since a 97% 16S rRNA sequence similarity has been widely used in bacterial taxonomy as one of the criteria to delineate species, this cut-off is often applied when clustering amplicon reads into OTUs. However, where this cut-off is derived based on full-length 16S rRNA genes, the amplicons obtained with current high-throughput sequencing approaches in general only rely on one or two variable regions within this 16S rRNA gene. Therefore, within this work we assess the paradigm that applying a clustering step using a sequence similarity cut-off of 97% would lead to OTUs accurately corresponding to species. We show that the robustness of this species cut-off is questionable when applied to short amplicons that are only representing a small part of the full 16S rRNA gene. Indeed, the selected amplicon might be evolutionary more conserved for a specific taxonomic lineage, leading to the merging of different species at the OTU level. Based on our observations we claim that integrating the differential evolutional rates of taxonomic lineages by defining a taxonomic dependent OTU cut-off score, provides a more accurate correspondence between OTUs and species. 
-#####In this context, we have developed a new tool named Dynamic Cutoff (DynamiC) capable of building a dynamic cut-off table "lookup table" for clustering that is taxonomic dependent region specific. In addition, DynamiC is also able to utilize this lookup table to further cluster 16S rRNA sequencing data into a more accurate clusters of operational taxonomic units (OTUs). DynamiC is perl based and freely available.  
+#####In this context, we have developed a new tool named Dynamic Cutoff (DynamiC) which in general performs two steps. 
+######	1)	Create a dynamic cut-off table: Based on a variable region specified by the user, an optimal cut-off is defined per taxonomic family, and stored in a “lookup table”. 
+######	2)	OTU Clustering using a dynamic cut-off: All sequencing reads are grouped per taxonomic family, and subsequently clustered into OTUs, thereby using a dynamic cut-off score that can be extracted from the lookup-table.
+
+ DynamiC is implemented in Perl and freely available.  
 #Installation Requirement:
 Perl, R and mothur need to be installed in order to be able to run the software, they can be installed from https://www.perl.org/, https://www.r-project.org/ and http://www.mothur.org/ respectively. (Mothur needs to be installed in the same directory)
 
 
 #Syntax:
 ####	perl DynamiC.pl {options}
-#####make sure you use an underscore (not a hyphen) to specify the options!
-#####make sure you use the complete path when describing files!
+#####!!make sure you use an underscore (not a hyphen) to specify the options!
+#####!!make sure you use the complete path when describing files!
 
 
-There are two modes to run DynamiC, Training or testing mode, they can be specified via the "_m" option. The training mode is used to build up your lookup table that will be utilized in later on when running the testing mode. The lookup table is a table of specific clustering cutoff that depend on the taxonomic rank specified (default is taxonomic family) and the location (and length) of the used amplicon within the 16S rRNA gene. 
-For instance:
+There are two modes to run DynamiC, i.e. Training or Testing "Running" mode, they can be specified via the "_m" option. 
+-	The training mode is used to build up your lookup table that takes into account the taxonomic rank (default taxonomic level is the family level) as well as the location and length of the used amplicon within the 16S rRNA gene.
+-	The testing mode  utilizes the lookup table created in training mode  for OTU clustering using a dynamic cut-off score.
+	Example:
 
-    Taxonomic Family      Position(0-300)   Position(50-350)                          
-    Staphylococcaceae     0.027             0.021
-    Streptococcaceae      0.012             0.03
-    Pseudomonadaceae      0.025             0.01
+	Taxonomic Family      Position(0-300)   Position(50-350)                          
+	Staphylococcaceae     0.027             0.021
+	Streptococcaceae      0.012             0.03
+	Pseudomonadaceae      0.025             0.01
 
 Yet. the produced lookup table would calculate appropriate cutoffs for the entire 16S rRNA gene regions (with a length and frequency dependent on the options used see below). This lookup table will be then fed to as one of the input for the testing mode, where DynamiC would utilize these cutoffs to cluster the input sequences into OTUs with potentially closer correspondence to the existing species with the sample, and lesser variability upon comparing results from different region of the 16S rRNA gene of the same sample(s). 
 
