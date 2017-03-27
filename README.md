@@ -12,19 +12,19 @@
 				 certain conditions; please refer to \'COPYING\' for details.;
 				 The software also includes \"mothur\" also under GNU Copyright
 ####  Mysara, M., Vandamme, P., et al., 2017. Reconciliation between Operational Taxonomic Units and Species Boundaries. FEMS Microbiology Ecology. 
-###Introducing Dynamic Cutoff (**D**ynami**C**)
-####Adjustable cutoff for OTU clustering
-#####The development of high-throughput sequencing technologies has revolutionized the field of microbial ecology via 16S RNA gene amplicon sequencing approaches. Clustering those amplicon sequencing data into Operational Taxonomic Units (OTUs) is one of the most commonly used approaches to approximate a bacterial species. Since a 97% 16S rRNA sequence similarity has been widely used in bacterial taxonomy as one of the criteria to delineate species, this cut-off is often applied when clustering amplicon reads into OTUs. However, where this cut-off is derived based on full-length 16S rRNA genes, the amplicons obtained with current high-throughput sequencing approaches in general only rely on one or two variable regions within this 16S rRNA gene. Therefore, within this work we assess the paradigm that applying a clustering step using a sequence similarity cut-off of 97% would lead to OTUs accurately corresponding to species. We show that the robustness of this species cut-off is questionable when applied to short amplicons that are only representing a small part of the full 16S rRNA gene. Indeed, the selected amplicon might be evolutionary more conserved for a specific taxonomic lineage, leading to the merging of different species at the OTU level. Based on our observations we claim that integrating the differential evolutional rates of taxonomic lineages by defining a taxonomic dependent OTU cut-off score, provides a more accurate correspondence between OTUs and species. 
-#####In this context, we have developed a new tool named Dynamic Cutoff (DynamiC) which in general performs two steps. 
-######	1)	Create a dynamic cut-off table: Based on a variable region specified by the user, an optimal cut-off is defined per taxonomic family, and stored in a “lookup table”. 
-######	2)	OTU Clustering using a dynamic cut-off: All sequencing reads are grouped per taxonomic family, and subsequently clustered into OTUs, thereby using a dynamic cut-off score that can be extracted from the lookup-table.
+### Introducing Dynamic Cutoff (**D**ynami**C**)
+#### Adjustable cutoff for OTU clustering
+##### The development of high-throughput sequencing technologies has revolutionized the field of microbial ecology via 16S RNA gene amplicon sequencing approaches. Clustering those amplicon sequencing data into Operational Taxonomic Units (OTUs) is one of the most commonly used approaches to approximate a bacterial species. Since a 97% 16S rRNA sequence similarity has been widely used in bacterial taxonomy as one of the criteria to delineate species, this cut-off is often applied when clustering amplicon reads into OTUs. However, where this cut-off is derived based on full-length 16S rRNA genes, the amplicons obtained with current high-throughput sequencing approaches in general only rely on one or two variable regions within this 16S rRNA gene. Therefore, within this work we assess the paradigm that applying a clustering step using a sequence similarity cut-off of 97% would lead to OTUs accurately corresponding to species. We show that the robustness of this species cut-off is questionable when applied to short amplicons that are only representing a small part of the full 16S rRNA gene. Indeed, the selected amplicon might be evolutionary more conserved for a specific taxonomic lineage, leading to the merging of different species at the OTU level. Based on our observations we claim that integrating the differential evolutional rates of taxonomic lineages by defining a taxonomic dependent OTU cut-off score, provides a more accurate correspondence between OTUs and species. 
+##### In this context, we have developed a new tool named Dynamic Cutoff (DynamiC) which in general performs two steps. 
+###### 1)	Create a dynamic cut-off table: Based on a variable region specified by the user, an optimal cut-off is defined per taxonomic family, and stored in a “lookup table”. 
+###### 2)	OTU Clustering using a dynamic cut-off: All sequencing reads are grouped per taxonomic family, and subsequently clustered into OTUs, thereby using a dynamic cut-off score that can be extracted from the lookup-table.
 
  DynamiC is implemented in Perl and freely available.  
 #Installation Requirement:
 Perl, R and mothur need to be installed in order to be able to run the software, they can be installed from https://www.perl.org/, https://www.r-project.org/ and http://www.mothur.org/ respectively. (Mothur needs to be installed in the same directory)
 
 
-#Syntax:
+# Syntax:
 ####	perl DynamiC.pl {options}
 #####!!make sure you use an underscore (not a hyphen) to specify the options!
 #####!!make sure you use the complete path when describing files!
@@ -47,9 +47,9 @@ Example:
 Used to calculate a lookup table containing dynamic cut-off scores, that will be used in the testing mode
 
 To specify training mode use the following option 
-#####	perl DynamiC.pl _m train
+##### perl DynamiC.pl _m train
 
-####Mandatory Options:	
+#### Mandatory Options:	
 	_f	Fasta file
 		Fasta file of the full length 16S rRNA gene sequences. 
 		this file can be downloaded from various databases such as Silva, greengene and RDP. 
@@ -69,7 +69,7 @@ To specify training mode use the following option
 		Here we apply the mothur version of SILVA database
 		It can be downloaded from http://www.mothur.org/wiki/Silva_reference_files
 
-####Non-mandatory Options:
+#### Non-mandatory Options:
 	_w	Average window size (default 500)
 		This option allows specifying the length of your amplicon.
 		For example, if the Illumina MiSeq platform with completely overlapping reads of 300 bases is used , this option should be set to 300.
@@ -103,12 +103,12 @@ To specify training mode use the following option
  		Preferably make _s 1500 (in case you are only interested in that region)
  		
 
-##Testing Mode:
+## Testing Mode:
 Used to cluster 16s rRNA gene amplicon sequencing data with our proposed lookup table obtained via training mode
 To specify testing mode use the following option 
 #####	perl DynamiC.pl _m test
 
-####Mandatory Options:
+#### Mandatory Options:
 	_w	Look Up table (created from the training mode)
 	_f	Fasta file of your unique (dereplicated) fasta IDs and sequences within your sample.
 
@@ -139,26 +139,26 @@ To specify testing mode use the following option
 	_d	Number illustration the desired taxonomic depth to use for clustering with the lookup table.
 		1= Kingdom, 6=genus, default is 5 (family)
 		This has also to match the taxonomic rank used while training the lookup table
-####Non-mandatory Options:
+#### Non-mandatory Options:
 		_e mothur clustering algorithm (default "average")
 		Options are:
 			Average Neighborhood  => average
 			Nearest Neighborhood  => nearest 
 			Furthest Neighborhood => furthest
-##General Options:
+## General Options:
 	_p number of processors (default =1)
 	_o Output path (Mandatory)
 
-#Output Files
+# Output Files
 The DynamiC program generates different text output files distributed over two folders "Final" and " Temp". Inside each of them another folder can be found, having different output depending on the mode.
 
-###Training Mode
-####Final
+### Training Mode
+#### Final
 Contains the final lookup table file named LookUp_table.
-####Temp
-#####Families folder:
+#### Temp
+##### Families folder:
 Containing several fasta files, each of them including all sequences with the same taxonomic rank.
-#####Distance_window_ "size":
+##### Distance_window_ "size":
 The word "size" would change depending on the size specified via _w option
 Containing a subfolder named according to each taxonomic rank, and within each folder containing:
 
@@ -166,20 +166,20 @@ Containing a subfolder named according to each taxonomic rank, and within each f
 	Distance:	With the corresponding distance of the sequences within each fasta file
 	Summary:	Produced via "R" with the distance distribution calculated.
 
-###Testing Mode
-####Final
+### Testing Mode
+#### Final
 Contains the final list file ending with (.list) [commonly refered to as mapping file]
-####Temp
+#### Temp
 Containing a subfolder named according to the existing taxonomic rank. within each:
 
 	Fasta:		With sequences belonging to that taxonomic rank
 	Distance:	With the corresponding distance of the sequences within each fasta file
 	List:		Produced via clustering each sequencing using the assigned cutoff from the lookup table
 
-#Testing
-###Example command (training): 
+# Testing
+### Example command (training): 
 	perl DynamiC.pl _m train _f /PATH/LTP.fasta _t /PATH/LTP.table _r /PATH/silva.bacteria.fasta
-###Example command (testing):
+### Example command (testing):
 	perl DynamiC.pl _m test _w /PATH/Test_Lookup _f /PATH/test.fasta _n /PATH/test.names _t /PATH/test.Tax.wang.taxonomy _k 6
 
 The different input file (LTP.fasta, LTP.table, Test_Lookup, test.fasta, test.names, test.Tax.wang.taxonomy) are included in the software. It will produce in the output path two files containing the final results i.e. a file named Test_Lookup and a file named test.lookup.an.list. The Test dataset is a part of the data published in:
@@ -189,10 +189,11 @@ The different input file (LTP.fasta, LTP.table, Test_Lookup, test.fasta, test.na
 #Citing
 If you are going to use DynamiC, please cite it with the included software (mothur):
 
-#####Mysara M., P. Vandamme, N. Leys, J. Raes and P. Monsieurs, 2016, Reconciliation between Operational Taxonomic Units and Species Boundaries, in preparation.
-#####Schloss PD, Westcott SL, Ryabin T, Hall JR, Hartmann M, Hollister EB, et al. (2009). Introducing mothur: open-source, platform-independent, community-supported software for describing and comparing microbial communities. Applied and environmental microbiology 75:7537–41.
+	Mysara, M., Vandamme, P., et al., 2017. Reconciliation between Operational Taxonomic Units and Species Boundaries. FEMS Microbiology Ecology.
+	Schloss PD, Westcott SL, Ryabin T, Hall JR, Hartmann M, Hollister EB, et al. (2009). Introducing mothur: open-source, platform-independent, community-supported software for describing and comparing microbial communities. Applied and environmental microbiology 75:7537–41.
 
-#Contact us
+
+# Contact us
 For questions, bugs and suggestions, please refer to mohamed.mysara@gmail.com & pieter.monsieurs@sckcen.be
 
 Developed by M.Mysara et al. 2016
