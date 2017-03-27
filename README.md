@@ -3,10 +3,10 @@
 				||              Welcome To DynamiC	          ||
 				|| Software for constructing a lookup table   ||
 				||		for more accurate OTU clustering	  ||
-				||    Copyright (C) 2016  <M.Mysara et al>    ||
+				||    Copyright (C) 2017  <M.Mysara et al>    ||
 				||||||||||||||||||||||||||||||||||||||||||||||||
 
-				 DynamiC version 1, Copyright (C) 2016, M.Mysara et al
+				 DynamiC version 1, Copyright (C) 2017, M.Mysara et al
 				 DynamiC comes with ABSOLUTELY NO WARRANTY.
 				 This is free software, and you are welcome to redistribute it under
 				 certain conditions; please refer to \'COPYING\' for details.;
@@ -196,4 +196,4 @@ If you are going to use DynamiC, please cite it with the included software (moth
 # Contact us
 For questions, bugs and suggestions, please refer to mohamed.mysara@gmail.com & pieter.monsieurs@sckcen.be
 
-Developed by M.Mysara et al. 2016
+Developed by M.Mysara et al. 2017
